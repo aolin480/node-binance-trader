@@ -10,6 +10,10 @@ const _ = require('lodash')
 const fs = require('fs')
 const ora = require('ora')
 
+////
+var request = require("request");
+////
+
 const PORT = process.env.PORT || 4000
 const INDEX = path.join(__dirname, 'index.html')
 
@@ -17,7 +21,7 @@ const INDEX = path.join(__dirname, 'index.html')
 
 const insert_into_files = false        // to save pair data to txt files in the data sub-folder 
 const send_signal_to_bva = false       // to monitor your strategies and send your signals to NBT Hub a.k.a http://bitcoinvsaltcoins.com
-const bva_ws_key = ""                 // if send_signal_to_bva true, please enter your ws key that you will find after signing up at http://bitcoinvsaltcoins.com
+const bva_ws_key = "5d0957056c647d0cb0263182"                 // if send_signal_to_bva true, please enter your ws key that you will find after signing up at http://bitcoinvsaltcoins.com
 
 const tracked_max = 200             // max of pairs to be tracked (useful for testing)
 const wait_time = 800               // to time out binance api calls (a lower number than 800 can result in api rstriction)
@@ -40,6 +44,36 @@ if (send_signal_to_bva) {
 }
 
 /////////////////////
+
+// PushOver Config
+
+/////////////////////
+
+function pushOverMsg(msg) {
+    let pushOverData = {
+        "token" : "a7hde8rxg36qoxqxufzsmxjsc8oioq",
+        "user" : "uk16sp73kebid2k172o3gz5fmffuik",
+        "message" : msg,
+        "sound" : "gamelan"
+    }
+
+    request.post(
+    {
+        url:'https://api.pushover.net/1/messages.json',
+        method: "POST",
+        formData: pushOverData
+    }, function optionalCallback(err, httpResponse, body) {
+        if (err) {
+            return console.error('push failed:', err);
+        }
+        // console.log('Upload successful!  Server responded with:', body);
+    });
+}
+
+pushOverMsg("📗 Running" )
+
+/////////////////////
+
 
 let pairs = []
 const nbt_prefix = "nbt_"
@@ -198,6 +232,11 @@ async function trackPairData(pair) {
             signaled_pairs[pair+signal_key] = true
             buy_prices[pair+signal_key] = first_ask_price[pair]
             report.stop()
+
+            curr_price = BigNumber(first_bid_price[pair]);        
+
+            pushOverMsg("📗" + pair + " - " + curr_price + " | " + stratname)
+
             console.log(pair.green + " BUY =>   " + stratname.green 
                 + " " + interv_vols_sum[pair].times(first_ask_price[pair]).toFormat(2))
                 + " " + trades[pair][trades[pair].length-1]
@@ -222,6 +261,9 @@ async function trackPairData(pair) {
         ) {
             signaled_pairs[pair+signal_key] = false
             report.stop()
+
+            pushOverMsg("📕" + pair + " - " + curr_price + " | " + stratname)
+
             console.log(pair.red + " SELL =>   " + stratname.red)
             report.start()
             const sell_signal = {
