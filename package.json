@@ -26,6 +26,7 @@
     "express": "^4.17.0",
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
+    "mysql": "github:mysqljs/mysql",
     "ora": "^3.4.0",
     "plotly": "^1.0.6",
     "readlines": "^0.2.0",
