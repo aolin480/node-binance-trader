@@ -8,6 +8,9 @@ const BigNumber = require('bignumber.js')
 const colors = require("colors")
 const _ = require('lodash')
 const fs = require('fs')
+var pushover = require('./src/Pushover.js')
+
+pushover.send("✅ Running!")
 
 const PORT = process.env.PORT || 4000
 const INDEX = path.join(__dirname, 'index.html')
@@ -20,7 +23,7 @@ const INDEX = path.join(__dirname, 'index.html')
 
 const insert_into_files = false                 // to back up pair data to txt files in the data sub-folder 
 const send_signal_to_bva = false                // to monitor your strategies and send your signals to NBT Hub a.k.a http://bitcoinvsaltcoins.com
-const bva_key = "replace_with_your_BvA_key"     // if send_signal_to_bva true, please enter your ws key that you will find after signing up at http://bitcoinvsaltcoins.com
+const bva_key = "5d0957056c647d0cb0263182"     // if send_signal_to_bva true, please enter your ws key that you will find after signing up at http://bitcoinvsaltcoins.com
 
 const tracked_max = 200             // max of pairs to be tracked (useful for testing)
 const wait_time = 800               // to time out binance api calls (a lower number than 800 can result in api rstriction)
@@ -198,6 +201,9 @@ async function trackPairData(pair) {
             signaled_pairs[pair+signal_key] = true
             buy_prices[pair+signal_key] = first_ask_price[pair]
             console.log(moment().format().padEnd(30)+ " BUY => " + pair.green + " " + stratname.green)
+            
+            pushover.send("📗" + pair + " - " + curr_price + " | " + stratname)
+
             const buy_signal = {
                 key: bva_key,
                 stratname: stratname,
@@ -268,7 +274,11 @@ async function trackPairData(pair) {
             && signaled_pairs[pair+signal_key]
         ) {
             signaled_pairs[pair+signal_key] = false
+            
             console.log(moment().format().padEnd(30)+ " SELL => " + pair.red + " " + stratname.red + " " + pnl.toFormat(2) + "%")
+
+            pushover.send("📕" + pair + " - " + curr_price + " | " + stratname)
+
             const sell_signal = {
                 key: bva_key,
                 stratname: stratname, 

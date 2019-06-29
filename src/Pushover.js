@@ -28,4 +28,6 @@ module.exports = class Pushover {
 pushover.send("📗" + pair + " - " + curr_price + " | " + stratname)
 
 pushover.send("📕" + pair + " - " + curr_price + " | " + stratname)
+
+pushover.send("✅ Running!")
 */
