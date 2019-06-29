@@ -8,7 +8,8 @@ const BigNumber = require('bignumber.js')
 const colors = require("colors")
 const _ = require('lodash')
 const fs = require('fs')
-var pushover = require('./src/Pushover.js')
+const Pushover = require('./src/Pushover.js')
+const pushover = new Pushover()
 
 pushover.send("✅ Running!")
 
